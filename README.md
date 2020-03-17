@@ -2,7 +2,7 @@
 This is messages dumper for vk
 
 ## What it can?
-Nothing. Really nothing. No module is ready yet. But in future:
+It can only download pics from already dumped json. But in future:
 - dump all messages to json file
 - download all attachments from json file
 - create html or txt for human reading from json file

@@ -1,17 +1,6 @@
 import sys
-import tty
 import termios
-
-
-def getch():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
+from dumperUtils import getch
 
 
 def main():
@@ -37,6 +26,9 @@ def main():
     if choice == '4':
         from longpoll import main as rt_dumper
         rt_dumper()
+    else:
+        print("There is no such option!", file=sys.stderr)
+        exit(1)
 
 
 if __name__ == '__main__':
