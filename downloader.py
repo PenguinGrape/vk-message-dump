@@ -4,7 +4,7 @@ import time
 import json
 import termios
 from main import getch
-from dumperUtils import clear, download
+from dumperUtils import clear, download, whois
 
 
 # TODO check another types
@@ -23,7 +23,7 @@ def menu():
     if choice == '2':
         return ['video']
     if choice == '3':
-        return ['audio']
+        return ['audio_message']
     if choice == '4':
         return ['doc']
     if choice == '5':
@@ -44,7 +44,7 @@ def menu():
                     attachments.append('video')
                     continue
                 if i == '3':
-                    attachments.append('audio')
+                    attachments.append('audio_message')
                     continue
                 if i == '4':
                     attachments.append('doc')
@@ -69,10 +69,17 @@ def downloader(mes, path, requested):
                                 url = size['url']
                                 maxw = size['width']
                         if url:
-                            download(url, f"{path}photo/{time.time()}.jpg")
+                            uid = attachment['photo']['owner_id']
+                            download(url, f"{path}photo/{time.time()}_{whois(uid)}.jpg")
                         else:
                             raise Exception("What the fuck, man??")
                     if attachment['type'] == 'video':
+                        pass
+                    if attachment['type'] == 'audio_message':
+                        url = attachment['audio_message']['link_mp3']
+                        uid = attachment['audio_message']['owner_id']
+                        download(url, f"{path}audio_message/{time.time()}_{whois(uid)}.mp3")
+                    if attachment['type'] == 'doc':
                         pass
 
 

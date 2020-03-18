@@ -23,3 +23,9 @@ def getch():
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
+
+
+def whois(uid):
+    # TODO parse username (when api will be ready)
+    # TODO database with uid:uname maybe?
+    return str(uid)
