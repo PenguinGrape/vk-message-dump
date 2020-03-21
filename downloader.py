@@ -7,6 +7,48 @@ from main import getch
 from dumperUtils import clear, download, whois
 
 
+# TODO catch exceptions if key is missing
+class Attachment(object):
+    """
+    Attachment types:
+    photo, video, audio_message, doc
+    """
+    def __init__(self, attachment):
+        if 'type' in attachment:
+            self.type = attachment['type']
+        else:
+            self.type = None
+        if self.type == 'photo':
+            sizes = attachment['photo']['sizes']
+            maxw = 0
+            for size in sizes:
+                if size['width'] > maxw and size['type'] not in "opqr":
+                    self.url = size['url']
+                    maxw = size['width']
+            if self.url:
+                self.owner = attachment['photo']['owner_id']
+                self.extension = ".jpg"
+        if self.type == 'video':
+            pass
+        if self.type == 'audio_message':
+            self.url = attachment['audio_message']['link_mp3']
+            self.owner = attachment['audio_message']['owner_id']
+            self.extension = ".mp3"
+        if self.type == 'doc':
+            pass
+
+
+class Message(object):
+    """"""
+    def __init__(self, message):
+        if 'attachments' in message:
+            self.attachments = []
+            for attachment in message['attachments']:
+                self.attachments.append(Attachment(attachment))
+        else:
+            self.attachments = None
+
+
 # TODO check another types
 def menu():
     clear()
@@ -56,31 +98,12 @@ def menu():
 
 
 def downloader(mes, path, requested):
-    for message in mes:
-        if 'attachments' in message:
-            for attachment in message['attachments']:
-                if attachment['type'] in requested:
-                    if attachment['type'] == 'photo':
-                        sizes = attachment['photo']['sizes']
-                        maxw = 0
-                        url = None
-                        for size in sizes:
-                            if size['width'] > maxw and size['type'] not in "opqr":
-                                url = size['url']
-                                maxw = size['width']
-                        if url:
-                            uid = attachment['photo']['owner_id']
-                            download(url, f"{path}photo/{time.time()}_{whois(uid)}.jpg")
-                        else:
-                            raise Exception("What the fuck, man??")
-                    if attachment['type'] == 'video':
-                        pass
-                    if attachment['type'] == 'audio_message':
-                        url = attachment['audio_message']['link_mp3']
-                        uid = attachment['audio_message']['owner_id']
-                        download(url, f"{path}audio_message/{time.time()}_{whois(uid)}.mp3")
-                    if attachment['type'] == 'doc':
-                        pass
+    for m in mes:
+        message = Message(m)
+        for attachment in message.attachments:
+            if attachment.type in requested:
+                download(attachment.url,
+                         f"{path}{attachment.type}/{time.time()}_{whois(attachment.owner)}{attachment.extension}")
 
 
 def main():
