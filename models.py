@@ -18,9 +18,13 @@ class Attachment(object):
                 if size['width'] > maxw and size['type'] not in "opqr":
                     self.url = size['url']
                     maxw = size['width']
-            if self.url:
-                self.owner = attachment['photo']['owner_id']
-                self.extension = ".jpg"
+            # TODO сделать нормальный обработчик картинок с размерами 0х0 (ШТАААА ВК БЛЯТЬ КАКОГО ХУЯ)
+            try:
+                if self.url:
+                    self.owner = attachment['photo']['owner_id']
+                    self.extension = ".jpg"
+            except AttributeError:
+                pass
         if self.type == 'video':
             # TODO ну тут говно ебейшее, надо апишку дергать. наверное.
             pass
