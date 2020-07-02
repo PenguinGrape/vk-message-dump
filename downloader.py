@@ -4,65 +4,10 @@ import time
 import json
 import termios
 from main import getch
+from models import Message
 from dumperUtils import clear, download, whois
 
 
-class Attachment(object):
-    """
-    Attachment types:
-    photo, video, audio_message, doc
-    """
-
-    def __init__(self, attachment):
-        if 'type' in attachment:
-            self.type = attachment['type']
-        else:
-            self.type = None
-        self.subtype = None
-        if self.type == 'photo':
-            sizes = attachment['photo']['sizes']
-            maxw = 0
-            for size in sizes:
-                if size['width'] > maxw and size['type'] not in "opqr":
-                    self.url = size['url']
-                    maxw = size['width']
-            if self.url:
-                self.owner = attachment['photo']['owner_id']
-                self.extension = ".jpg"
-        if self.type == 'video':
-            # TODO ну тут говно ебейшее, надо апишку дергать. наверное.
-            pass
-        if self.type == 'audio_message':
-            self.url = attachment['audio_message']['link_mp3']
-            self.owner = attachment['audio_message']['owner_id']
-            self.extension = ".mp3"
-        if self.type == 'doc':
-            self.subtype = {1: 'text_documents',
-                            2: 'archives',
-                            3: 'gifs',
-                            4: 'images',
-                            5: 'audios',
-                            6: 'videos',
-                            7: "e-books",
-                            8: 'unknown'
-                            }[attachment['doc']['type']]
-            self.url = attachment['doc']['url']
-            self.owner = attachment['doc']['owner_id']
-            self.extension = f'.{attachment["doc"]["ext"]}'
-            pass
-
-
-class Message(object):
-    """"""
-
-    def __init__(self, message):
-        self.attachments = []
-        if 'attachments' in message:
-            for attachment in message['attachments']:
-                self.attachments.append(Attachment(attachment))
-
-
-# TODO check another types
 def menu():
     clear()
     print("What would you like to download?\n1) Only photos\n2) Only videos\n3) Only audios\n4) Only "
@@ -76,7 +21,15 @@ def menu():
     if choice == '1':
         return ['photo']
     if choice == '2':
-        return ['video']
+        print("Downloading videos requires api token. Continue? [Y/N]")
+        try:
+            ch = getch()
+        except termios.error:
+            ch = input()
+        if ch == 'Y':
+            return ['video']
+        else:
+            exit(0)
     if choice == '3':
         return ['audio_message']
     if choice == '4':
@@ -96,7 +49,13 @@ def menu():
                     attachments.append('photo')
                     continue
                 if i == '2':
-                    attachments.append('video')
+                    print("Downloading videos requires api token. Continue? [Y/N]")
+                    try:
+                        ch = getch()
+                    except termios.error:
+                        ch = input()
+                    if ch == 'Y':
+                        attachments.append('video')
                     continue
                 if i == '3':
                     attachments.append('audio_message')
@@ -108,6 +67,7 @@ def menu():
     else:
         print("There is no such option!", file=sys.stderr)
         exit(1)
+# TODO check another types
 
 
 def downloader(mes, path, requested):
@@ -141,6 +101,9 @@ def main():
         filename = jsonpath.split('/')[-1]
         path = jsonpath.split(filename)[0]
     dirs = menu()
+    if 'video' in dirs:
+        pass
+        # TODO придумать как получить апишку
     clear()
     try:
         jsonfile = open(jsonpath, "r")
